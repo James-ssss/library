@@ -22,5 +22,5 @@ type BookRepository interface {
 	GetBooks(ctx context.Context) ([]model.Book, []int, error)
 	UpdateBook(ctx context.Context, book model.Book, bookId int) (model.Book, error)
 
-	GetBooksByTitle(ctx context.Context, bookTitle string) ([]model.Book, []int, error)
+	GetBooksByCondition(ctx context.Context, num int, bookGenre string) ([]model.Book, []int, error)
 }

@@ -7,6 +7,7 @@ import (
 	"crud/internal/lib/db"
 	"crud/internal/repository/dbModel"
 	"fmt"
+	"github.com/jackc/pgx/v5"
 )
 
 type _bookRepository struct {
@@ -114,15 +115,26 @@ func (bookRepository _bookRepository) DeleteBook(ctx context.Context, bookId int
 	return nil
 }
 
-func (bookRepository _bookRepository) GetBooksByTitle(ctx context.Context, bookTitle string) ([]model.Book, []int, error) {
+func (bookRepository _bookRepository) GetBooksByCondition(ctx context.Context, num int, bookCondition string) ([]model.Book, []int, error) {
 	var books []model.Book
 	var ids []int
 
-	rows, err := bookRepository.db.PgConn.Query(ctx,
-		`SELECT p.id, p.title, p.description, p.image, p.genre, p.year, p.pages, p.author 
-					FROM public.book p WHERE LOWER(p.title) LIKE '%' || LOWER($1) || '%'`, bookTitle)
+	var rows pgx.Rows
+	var err error
 
-	fmt.Println(rows)
+	if num == 1 {
+		rows, err = bookRepository.db.PgConn.Query(ctx,
+			`SELECT p.id, p.title, p.description, p.image, p.genre, p.year, p.pages, p.author 
+					FROM public.book p WHERE LOWER(p.title) LIKE '%' || LOWER($1) || '%'`, bookCondition)
+	} else if num == 2 {
+		rows, err = bookRepository.db.PgConn.Query(ctx,
+			`SELECT p.id, p.title, p.description, p.image, p.genre, p.year, p.pages, p.author 
+					FROM public.book p WHERE LOWER(p.genre) LIKE '%' || LOWER($1) || '%'`, bookCondition)
+	} else if num == 3 {
+		rows, err = bookRepository.db.PgConn.Query(ctx,
+			`SELECT p.id, p.title, p.description, p.image, p.genre, p.year, p.pages, p.author 
+					FROM public.book p WHERE LOWER(p.author) LIKE '%' || LOWER($1) || '%'`, bookCondition)
+	}
 
 	if err != nil {
 		return nil, nil, fmt.Errorf("ошибка получения списка книг: %s", err.Error())

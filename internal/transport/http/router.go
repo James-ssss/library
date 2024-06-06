@@ -24,9 +24,9 @@ func InitRoutes(service service.AuthService, postService service.PostService, bo
 		api.PUT("/books/:id", handler.UpdateBook(bookService))
 		api.DELETE("/books/:id", handler.DeleteBook(bookService))
 
-		api.GET("/books/title", handler.GetBooksByTitle(bookService))
-		api.GET("/books/genre")
-		api.GET("/books/author")
+		api.GET("/books/title", handler.GetBooksByCondition(bookService, 1))
+		api.GET("/books/genre", handler.GetBooksByCondition(bookService, 2))
+		api.GET("/books/author", handler.GetBooksByCondition(bookService, 3))
 	}
 	return router
 }

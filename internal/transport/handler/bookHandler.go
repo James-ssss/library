@@ -3,7 +3,6 @@ package handler
 import (
 	"crud/internal/core/interface/service"
 	"crud/internal/core/model"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"log/slog"
 	"net/http"
@@ -33,6 +32,14 @@ type handlerBooks struct {
 
 type bookTitle struct {
 	Title string `json:"title"`
+}
+
+type bookGenre struct {
+	Genre string `json:"genre"`
+}
+
+type bookAuthor struct {
+	Author string `json:"author"`
 }
 
 func CreateBook(service service.BookService) gin.HandlerFunc {
@@ -112,6 +119,7 @@ func GetBooks(service service.BookService) gin.HandlerFunc {
 			b.Title = book.Title
 			b.Description = book.Description
 			b.ImageURL = book.ImageURL
+			b.Genre = book.Genre
 			b.Pages = book.Pages
 			b.Year = book.Year
 			b.Author = book.Author
@@ -186,21 +194,39 @@ func UpdateBook(service service.BookService) gin.HandlerFunc {
 	}
 }
 
-func GetBooksByTitle(service service.BookService) gin.HandlerFunc {
+func GetBooksByCondition(service service.BookService, num int) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var books []handlerBooks
-
 		var bTitle bookTitle
+		var bGenre bookGenre
+		var bAuthor bookAuthor
+		var err error
 
-		if err := c.BindJSON(&bTitle); err != nil {
+		if num == 1 {
+			err = c.BindJSON(&bTitle)
+		} else if num == 2 {
+			err = c.BindJSON(&bGenre)
+		} else if num == 3 {
+			err = c.BindJSON(&bAuthor)
+		}
+
+		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest,
 				gin.H{"message": "неверное тело запроса"})
 
 			return
 		}
-		fmt.Printf("bTitle %s \n", bTitle.Title)
 
-		rBooks, ids, err := service.GetBooksByTitle(c.Request.Context(), bTitle.Title)
+		var rBooks []model.Book
+		var ids []int
+
+		if num == 1 {
+			rBooks, ids, err = service.GetBooksByCondition(c.Request.Context(), 1, bTitle.Title)
+		} else if num == 2 {
+			rBooks, ids, err = service.GetBooksByCondition(c.Request.Context(), 2, bGenre.Genre)
+		} else if num == 3 {
+			rBooks, ids, err = service.GetBooksByCondition(c.Request.Context(), 3, bAuthor.Author)
+		}
 
 		if err != nil {
 			slog.Error(err.Error())
@@ -216,6 +242,7 @@ func GetBooksByTitle(service service.BookService) gin.HandlerFunc {
 			b.Id = ids[index]
 			b.Title = book.Title
 			b.Description = book.Description
+			b.Genre = book.Genre
 			b.ImageURL = book.ImageURL
 			b.Pages = book.Pages
 			b.Year = book.Year

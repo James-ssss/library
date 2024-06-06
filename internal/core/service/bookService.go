@@ -71,8 +71,8 @@ func (bookService _bookService) UpdateBook(ctx context.Context, book model.Book,
 	return uBook, nil
 }
 
-func (bookService _bookService) GetBooksByTitle(ctx context.Context, bookTitle string) ([]model.Book, []int, error) {
-	books, ids, err := bookService.repo.GetBooksByTitle(ctx, bookTitle)
+func (bookService _bookService) GetBooksByCondition(ctx context.Context, num int, bookCondition string) ([]model.Book, []int, error) {
+	books, ids, err := bookService.repo.GetBooksByCondition(ctx, num, bookCondition)
 
 	if err != nil {
 		slog.Error(err.Error())

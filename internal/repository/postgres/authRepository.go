@@ -4,12 +4,14 @@ import (
 	"context"
 	"crud/internal/core/interface/repository"
 	"crud/internal/lib/db"
+	"database/sql"
+	"errors"
 	"fmt"
 )
 
 type userDB struct {
 	Login    string `db:"login"`
-	Password string `db:"password"`
+	Password string `db:"pass"`
 }
 
 type _authRepo struct {
@@ -30,19 +32,26 @@ func (repo _authRepo) GetUser(ctx context.Context, login, hashPassword string) (
 	}
 
 	return login, nil
-
 }
 
 func (repo _authRepo) Register(ctx context.Context, login, hashPassword string) (string, error) {
+	var uLogin string
+	row := repo.PgConn.QueryRow(ctx, `SELECT login FROM public.user WHERE login=$1`, login)
+
+	if err := row.Scan(&uLogin); !errors.Is(err, sql.ErrNoRows) && err == nil {
+		return "", fmt.Errorf("пользователь с таким логином уже зарегистрирован")
+	}
+
 	_, err := repo.PgConn.Exec(
 		ctx,
 		`INSERT INTO public.user(login, pass) values ($1, $2)`,
 		login, hashPassword,
 	)
-	fmt.Printf("Register login %s password %s \n", login, hashPassword)
+
 	if err != nil {
 		return "", fmt.Errorf("не смогли создать: %x", err)
 	}
+	fmt.Printf("Register login %s password %s \n", login, hashPassword)
 
 	return login, nil
 }

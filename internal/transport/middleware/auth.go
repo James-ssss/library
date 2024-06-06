@@ -20,7 +20,6 @@ func AuthMiddleware(c *gin.Context) {
 	}
 
 	splitted := strings.Split(auth, " ")
-	fmt.Printf("Splitted %s \n", splitted)
 
 	login, err := parseToken(splitted[0])
 

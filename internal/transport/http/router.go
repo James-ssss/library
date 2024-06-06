@@ -7,15 +7,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitRoutes(service service.AuthService, postService service.PostService) *gin.Engine {
+func InitRoutes(service service.AuthService, postService service.PostService, bookService service.BookService) *gin.Engine {
 	router := gin.New()
 
 	router.POST("/register", handler.RegisterUser(service))
+	router.POST("/login", handler.RegisterUser(service))
 
 	api := router.Group("/api", middleware.AuthMiddleware)
 	{
 		api.POST("/post", handler.CreatePost(postService))
 		api.GET("/post/:id", handler.GetPost(postService))
+
+		api.GET("/books", handler.GetBooks(bookService))
+		api.GET("/books/:id", handler.GetBook(bookService))
+		api.POST("/books", handler.CreateBook(bookService))
+		api.PUT("/books/:id", handler.UpdateBook(bookService))
+		api.DELETE("/books/:id", handler.DeleteBook(bookService))
+
+		api.GET("/books/title", handler.GetBooksByTitle(bookService))
+		api.GET("/books/genre")
+		api.GET("/books/author")
 	}
 	return router
 }

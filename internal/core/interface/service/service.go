@@ -24,3 +24,9 @@ type BookService interface {
 
 	GetBooksByCondition(ctx context.Context, num int, bookGenre string) ([]model.Book, []int, error)
 }
+
+type FavouritesService interface {
+	CreateFavourite(ctx context.Context, login string, bookId int) (int, error)
+	GetFavourites(ctx context.Context, login string) ([]model.Book, []int, error)
+	DeleteFavourite(ctx context.Context, bookId int) error
+}

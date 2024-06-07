@@ -8,7 +8,6 @@ import (
 
 type RepositoryManager struct {
 	repository.AuthRepository
-	repository.PostRepository
 	repository.BookRepository
 	repository.FavouritesRepository
 }
@@ -16,7 +15,6 @@ type RepositoryManager struct {
 func NewRepositoryManager(db *db.Db) RepositoryManager {
 	return RepositoryManager{
 		postgres.NewRepo(db),
-		postgres.NewPostRepo(db),
 		postgres.NewBookRepo(db),
 		postgres.NewFavouritesRepo(db),
 	}

@@ -10,11 +10,6 @@ type AuthRepository interface {
 	Register(ctx context.Context, login, hashPassword string) (string, error)
 }
 
-type PostRepository interface {
-	CreatePost(ctx context.Context, post model.Post) (int, error)
-	GetPost(ctx context.Context, postId int) (model.Post, error)
-}
-
 type BookRepository interface {
 	CreateBook(ctx context.Context, book model.Book) (int, error)
 	DeleteBook(ctx context.Context, bookId int) error

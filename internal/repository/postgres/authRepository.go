@@ -25,7 +25,7 @@ func NewRepo(db *db.Db) repository.AuthRepository {
 func (repo _authRepo) GetUser(ctx context.Context, login, hashPassword string) (string, error) {
 	var user userDB
 
-	row := repo.PgConn.QueryRow(ctx, `SELECT * FROM public.user WHERE login=$1 AND pas=$2`, login, hashPassword)
+	row := repo.PgConn.QueryRow(ctx, `SELECT * FROM users WHERE login=$1 AND password=$2`, login, hashPassword)
 
 	if err := row.Scan(&user); err != nil {
 		return "", fmt.Errorf("не смогли получить юзера: %x", err)
@@ -36,7 +36,7 @@ func (repo _authRepo) GetUser(ctx context.Context, login, hashPassword string) (
 
 func (repo _authRepo) Register(ctx context.Context, login, hashPassword string) (string, error) {
 	var uLogin string
-	row := repo.PgConn.QueryRow(ctx, `SELECT login FROM public.user WHERE login=$1`, login)
+	row := repo.PgConn.QueryRow(ctx, `SELECT login FROM users WHERE login=$1`, login)
 
 	if err := row.Scan(&uLogin); !errors.Is(err, sql.ErrNoRows) && err == nil {
 		return "", fmt.Errorf("пользователь с таким логином уже зарегистрирован")
@@ -44,7 +44,7 @@ func (repo _authRepo) Register(ctx context.Context, login, hashPassword string) 
 
 	_, err := repo.PgConn.Exec(
 		ctx,
-		`INSERT INTO public.user(login, pass) values ($1, $2)`,
+		`INSERT INTO users(login, password) values ($1, $2)`,
 		login, hashPassword,
 	)
 

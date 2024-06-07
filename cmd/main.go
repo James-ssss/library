@@ -25,13 +25,11 @@ func main() {
 
 	serv := service.NewAuthService(manager.AuthRepository)
 
-	postServ := service.NewPostService(manager.PostRepository)
-
 	bookServ := service.NewBookService(manager.BookRepository)
 
 	favouriteServ := service.NewFavouritesService(manager.FavouritesRepository)
 
-	router := http.InitRoutes(serv, postServ, bookServ, favouriteServ)
+	router := http.InitRoutes(serv, bookServ, favouriteServ)
 
 	if err := http2.ListenAndServe(":2222", router); err != nil {
 		log.Fatal(err)

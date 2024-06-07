@@ -11,38 +11,39 @@ import (
 	"strings"
 )
 
-func AuthMiddleware(c *gin.Context) {
+func RoleMiddleware(c *gin.Context) {
 	auth := c.GetHeader("Authorization")
 
 	if auth == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "invalid (no token)"})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, "invalid (no role)")
 		return
 	}
 
 	splitted := strings.Split(auth, " ")
-	if len(splitted) != 2 || splitted[0] != "Bearer" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "invalid token format"})
-		return
-	}
 
-	login, err := parseToken(splitted[1])
+	role, err := parseTokenRole(splitted[0])
 
 	if err != nil {
 		slog.Error(err.Error())
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "invalid token"})
-		return
+		c.AbortWithStatusJSON(http.StatusUnauthorized, "invalid role")
 	}
 
-	c.Set("user", login)
+	c.Set("role", role)
+
+	if role != "admin" {
+		return
+	}
 	c.Next()
 }
 
-func parseToken(token string) (string, error) {
+func parseTokenRole(token string) (string, error) {
+	// at - access token
 	at, err := jwt.ParseWithClaims(token, &service.TokenClaims{},
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("invalid method")
 			}
+
 			return []byte(model.SignInKey), nil
 		})
 
@@ -52,9 +53,9 @@ func parseToken(token string) (string, error) {
 
 	claims, ok := at.Claims.(*service.TokenClaims)
 
-	if !ok || !at.Valid {
-		return "", fmt.Errorf("invalid token claims")
+	if !ok {
+		return "", err
 	}
 
-	return claims.Login, nil
+	return claims.Role, nil
 }

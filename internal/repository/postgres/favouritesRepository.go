@@ -21,7 +21,7 @@ func (favouritesRepository _favouritesRepository) GetUserIdByLogin(ctx context.C
 	var id int
 
 	err := favouritesRepository.db.PgConn.QueryRow(ctx,
-		`SELECT u.id FROM public.user u WHERE u.login = $1`,
+		`SELECT u.id FROM users u WHERE u.login = $1`,
 		login).Scan(&id)
 
 	return id, err
@@ -32,7 +32,7 @@ func (favouritesRepository _favouritesRepository) CreateFavourite(ctx context.Co
 	userId, err := favouritesRepository.GetUserIdByLogin(ctx, login)
 
 	err = favouritesRepository.db.PgConn.QueryRow(ctx,
-		`INSERT INTO public.favourites(user_id, book_id) 
+		`INSERT INTO favourites(user_id, book_id) 
 					values ($1,$2) RETURNING book_id`,
 		userId,
 		bookId).Scan(&id)
@@ -47,8 +47,8 @@ func (favouritesRepository _favouritesRepository) GetFavourites(ctx context.Cont
 
 	rows, err := favouritesRepository.db.PgConn.Query(ctx,
 		`SELECT *
-					FROM public.book b
-					WHERE b.id in (SELECT f.book_id FROM public.favourites f WHERE f.user_id = $1)`,
+					FROM books b
+					WHERE b.id in (SELECT f.book_id FROM favourites f WHERE f.user_id = $1)`,
 		userId)
 	if err != nil {
 		return nil, nil, fmt.Errorf("ошибка получения списка избранных книг: %s", err.Error())
@@ -74,7 +74,7 @@ func (favouritesRepository _favouritesRepository) GetFavourites(ctx context.Cont
 func (favouritesRepository _favouritesRepository) DeleteFavourite(ctx context.Context, favouriteId int) error {
 
 	err := favouritesRepository.db.PgConn.QueryRow(ctx,
-		`DELETE FROM public.favourites f WHERE f.id=$1`,
+		`DELETE FROM favourites f WHERE f.book_id=$1`,
 		favouriteId)
 
 	if err != nil {

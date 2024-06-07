@@ -16,6 +16,7 @@ import (
 type TokenClaims struct {
 	jwt.StandardClaims
 	Login string `json:"login"`
+	Role  string `json:"role"`
 }
 
 type _authService struct {
@@ -26,7 +27,7 @@ func NewAuthService(repo repository.AuthRepository) service.AuthService {
 	return _authService{repo: repo}
 }
 
-func (service _authService) Register(ctx context.Context, login, password string) (string, error) {
+func (service _authService) Register(ctx context.Context, login, password, role string) (string, error) {
 
 	hash := generatePassword(password)
 
@@ -37,7 +38,7 @@ func (service _authService) Register(ctx context.Context, login, password string
 		return "", errors.New("не смогли создать пользователя")
 	}
 
-	return generateToken(userName)
+	return generateToken(userName, role)
 
 }
 
@@ -52,13 +53,14 @@ func generatePassword(password string) string {
 	return fmt.Sprintf("%x", hash.Sum([]byte(model.Salt)))
 }
 
-func generateToken(login string) (string, error) {
+func generateToken(login, role string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &TokenClaims{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(model.TokenTTL).Unix(),
 			IssuedAt:  time.Now().Unix(),
 		},
 		Login: login,
+		Role:  role,
 	})
 	return token.SignedString([]byte(model.SignInKey))
 }

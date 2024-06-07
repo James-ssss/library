@@ -23,7 +23,7 @@ func (bookRepository _bookRepository) CreateBook(ctx context.Context, book model
 	var id int
 
 	err := bookRepository.db.PgConn.QueryRow(ctx,
-		`INSERT INTO public.book(title, description, image, genre, year, pages, author) 
+		`INSERT INTO books(title, description, image, genre, year, pages, author) 
 					values ($1,$2,$3,$4, $5, $6, $7) RETURNING id`,
 		bookDb.Title,
 		bookDb.Description,
@@ -40,7 +40,7 @@ func (bookRepository _bookRepository) GetBook(ctx context.Context, bookId int) (
 	var book dbModel.Book
 
 	err := bookRepository.db.PgConn.QueryRow(ctx,
-		`SELECT p.title, p.description, p.image, p.genre, p.year, p.pages, p.author FROM public.book p WHERE p.id=$1`,
+		`SELECT p.title, p.description, p.image, p.genre, p.year, p.pages, p.author FROM books p WHERE p.id=$1`,
 		bookId).Scan(&book.Title, &book.Description, &book.ImageURL, &book.Genre, &book.Year, &book.Pages, &book.Author)
 
 	if err != nil {
@@ -55,7 +55,7 @@ func (bookRepository _bookRepository) GetBooks(ctx context.Context) ([]model.Boo
 	var ids []int
 
 	rows, err := bookRepository.db.PgConn.Query(ctx,
-		`SELECT p.id, p.title, p.description, p.image, p.genre, p.year, p.pages, p.author FROM public.book p`)
+		`SELECT p.id, p.title, p.description, p.image, p.genre, p.year, p.pages, p.author FROM books p`)
 	if err != nil {
 		return nil, nil, fmt.Errorf("ошибка получения списка книг: %s", err.Error())
 	}
@@ -81,7 +81,7 @@ func (bookRepository _bookRepository) UpdateBook(ctx context.Context, book model
 	var id int
 
 	err := bookRepository.db.PgConn.QueryRow(ctx,
-		`UPDATE public.book
+		`UPDATE books
 				SET title = $1,
     				description = $2,
    					image = $3,
@@ -105,7 +105,7 @@ func (bookRepository _bookRepository) UpdateBook(ctx context.Context, book model
 func (bookRepository _bookRepository) DeleteBook(ctx context.Context, bookId int) error {
 
 	err := bookRepository.db.PgConn.QueryRow(ctx,
-		`DELETE FROM public.book p WHERE p.id=$1`,
+		`DELETE FROM books p WHERE p.id=$1`,
 		bookId)
 
 	if err != nil {
@@ -125,15 +125,15 @@ func (bookRepository _bookRepository) GetBooksByCondition(ctx context.Context, n
 	if num == 1 {
 		rows, err = bookRepository.db.PgConn.Query(ctx,
 			`SELECT p.id, p.title, p.description, p.image, p.genre, p.year, p.pages, p.author 
-					FROM public.book p WHERE LOWER(p.title) LIKE '%' || LOWER($1) || '%'`, bookCondition)
+					FROM books p WHERE LOWER(p.title) LIKE '%' || LOWER($1) || '%'`, bookCondition)
 	} else if num == 2 {
 		rows, err = bookRepository.db.PgConn.Query(ctx,
 			`SELECT p.id, p.title, p.description, p.image, p.genre, p.year, p.pages, p.author 
-					FROM public.book p WHERE LOWER(p.genre) LIKE '%' || LOWER($1) || '%'`, bookCondition)
+					FROM books p WHERE LOWER(p.genre) LIKE '%' || LOWER($1) || '%'`, bookCondition)
 	} else if num == 3 {
 		rows, err = bookRepository.db.PgConn.Query(ctx,
 			`SELECT p.id, p.title, p.description, p.image, p.genre, p.year, p.pages, p.author 
-					FROM public.book p WHERE LOWER(p.author) LIKE '%' || LOWER($1) || '%'`, bookCondition)
+					FROM books p WHERE LOWER(p.author) LIKE '%' || LOWER($1) || '%'`, bookCondition)
 	}
 
 	if err != nil {

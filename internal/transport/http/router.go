@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitRoutes(service service.AuthService, postService service.PostService, bookService service.BookService, favouriteService service.FavouritesService) *gin.Engine {
+func InitRoutes(service service.AuthService, bookService service.BookService, favouriteService service.FavouritesService) *gin.Engine {
 	router := gin.New()
 
 	router.POST("/register", handler.RegisterUser(service))
@@ -15,15 +15,6 @@ func InitRoutes(service service.AuthService, postService service.PostService, bo
 
 	api := router.Group("/api", middleware.AuthMiddleware)
 	{
-		api.POST("/post", handler.CreatePost(postService))
-		api.GET("/post/:id", handler.GetPost(postService))
-
-		api.GET("/books", handler.GetBooks(bookService))
-		api.GET("/books/:id", handler.GetBook(bookService))
-		api.POST("/books", handler.CreateBook(bookService))
-		api.PUT("/books/:id", handler.UpdateBook(bookService))
-		api.DELETE("/books/:id", handler.DeleteBook(bookService))
-
 		api.GET("/books/title", handler.GetBooksByCondition(bookService, 1))
 		api.GET("/books/genre", handler.GetBooksByCondition(bookService, 2))
 		api.GET("/books/author", handler.GetBooksByCondition(bookService, 3))
@@ -31,6 +22,15 @@ func InitRoutes(service service.AuthService, postService service.PostService, bo
 		api.GET("/favourites", handler.GetFavourites(favouriteService))
 		api.POST("/favourites/:id", handler.CreateFavourite(favouriteService))
 		api.DELETE("/favourites/:id", handler.DeleteFavourite(favouriteService))
+	}
+
+	adminApi := router.Group("/admin", middleware.AuthMiddleware, middleware.RoleMiddleware)
+	{
+		adminApi.GET("/books", handler.GetBooks(bookService))
+		adminApi.GET("/books/:id", handler.GetBook(bookService))
+		adminApi.POST("/books", handler.CreateBook(bookService))
+		adminApi.PUT("/books/:id", handler.UpdateBook(bookService))
+		adminApi.DELETE("/books/:id", handler.DeleteBook(bookService))
 	}
 	return router
 }

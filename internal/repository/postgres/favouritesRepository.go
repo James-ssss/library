@@ -74,7 +74,7 @@ func (favouritesRepository _favouritesRepository) GetFavourites(ctx context.Cont
 func (favouritesRepository _favouritesRepository) DeleteFavourite(ctx context.Context, favouriteId int) error {
 
 	err := favouritesRepository.db.PgConn.QueryRow(ctx,
-		`DELETE FROM favourites f WHERE f.book_id=$1`,
+		`DELETE FROM favourites f WHERE f.id=$1`,
 		favouriteId)
 
 	if err != nil {

@@ -21,7 +21,7 @@ func RoleMiddleware(c *gin.Context) {
 
 	splitted := strings.Split(auth, " ")
 
-	role, err := parseTokenRole(splitted[0])
+	role, err := parseTokenRole(splitted[1])
 
 	if err != nil {
 		slog.Error(err.Error())
